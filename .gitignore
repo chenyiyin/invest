@@ -1,0 +1,61 @@
+library(RCurl)
+library(XML)
+
+#设置报头
+myheader=c("User-Agent"="Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.6) ",
+"Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+"Accept-Language"="en-us",
+"Connection"="keep-alive",
+"Accept-Charset"="GB2312,utf-8;q=0.7,*;q=0.7"
+)
+
+#标题
+rz_title<-c("")
+#行业
+hy<-c("")
+
+urllist=""
+
+info<-for (page in 1:2){
+    urllist[page]<- paste("http://www.investide.cn/news/homepage-0-0-%E8%9E%8D%E8%B5%84-",page,".html",sep="")
+    temp<-getURL(urllist[page],httpheader=myheader)
+    k<-htmlParse(temp)
+
+    #######提取行业
+    hy1<-sapply(getNodeSet(k,'//div[contains(@class,"category")]'),xmlValue)
+    hy_a<-strsplit(hy1,'\r\n\t')
+    hy_b<-lapply(hy_a,function(x){x[5]})
+    hy_c<-unlist(hy_b)
+    hy_d<-strsplit(hy_c,' ')
+    hy_e<-lapply(hy_d,function(x){x[29]})
+    hy_f<-unlist(hy_e)
+    hy_g<-strsplit(hy_f,'\t\t\t\t\t\t\t\t')
+    hy_h<-unlist(hy_g)
+    hy<-hy_h[!(hy_h=="")]
+
+    ####标题
+    title1<-sapply(getNodeSet(k,'//div[contains(@class,"title")]'),xmlValue)[1:length(hy)]
+
+    title_a<-strsplit(title1,'\r\n\t')
+    title_b<-lapply(title_a,function(x){x[3]})
+    title_c<-unlist(title_b)
+    title_d<-strsplit(title_c,'                    \t\t\t\t\t\t\t\t')
+    title_e<-unlist(title_d)
+    rz_title<-title_e[!(title_e=="")]
+
+    result<-data.frame(rz_title,hy)
+    names(result)<-c('标题','所属行业')
+    if (page==1)
+    pageresults<-result
+    else
+    pageresults <- rbind(pageresults,result)
+
+}
+
+
+#写入csv文件
+write.csv(pageresults,file="融资信息.csv")
+
+
+
+
