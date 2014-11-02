@@ -16,7 +16,8 @@ hy<-c("")
 
 urllist=""
 
-info<-for (page in 1:2){
+page=1
+
     urllist[page]<- paste("http://www.investide.cn/news/homepage-0-0-%E8%9E%8D%E8%B5%84-",page,".html",sep="")
     temp<-getURL(urllist[page],httpheader=myheader)
     k<-htmlParse(temp)
@@ -50,7 +51,7 @@ info<-for (page in 1:2){
     else
     pageresults <- rbind(pageresults,result)
 
-}
+
 
 
 #写入csv文件
